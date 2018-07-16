@@ -21,24 +21,21 @@ class chassis-wxr (
 	$config
 ) {
 	if $config[wxr] {
+		# TODO: Should we support absolute paths?
 		$wxr_path = "${ $config[mapped_paths][content] }/${ $config[wxr][path] }"
 
-		exec { "check_wxr_exists":
-			command => "/bin/true",
-			onlyif  => "/usr/bin/test -e ${ $wxr_path }",
-		}
-
-		# notify { 'WXR file missing! No file exists at ${ $wxr_path }':
-		# 	require => Exec["check_wxr_exists"]
+		# TODO: Reinstate some sort of error notification.
+		# exec { "check_wxr_exists":
+		# 	command => "/bin/true",
+		# 	onlyif  => "/usr/bin/test -e ${ $wxr_path }",
 		# }
+
+		# TODO: Should we allow the ability to wipe the DB before restoring?
 
 		wp::plugin { 'wordpress-importer':
 			location => $config[mapped_paths][base],
 			ensure   => installed,
-			require  => [
-				Class['wp'],
-				Exec["check_wxr_exists"],
-			],
+			require  => Class['wp'],
 		}
 
 		-> wp::command { "$location wp import ${ $wxr_path }":
