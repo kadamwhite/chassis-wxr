@@ -30,17 +30,34 @@ class chassis-wxr (
 		# 	onlyif  => "/usr/bin/test -e ${ $wxr_path }",
 		# }
 
-		# TODO: Should we allow the ability to wipe the DB before restoring?
+		if $config[wxr][clean] == true {
+			wp::command { "$location wp site empty":
+				location => $config[mapped_paths][base],
+				command  => "site empty --uploads --yes",
+			}
 
-		wp::plugin { 'wordpress-importer':
-			location => $config[mapped_paths][base],
-			ensure   => installed,
-			require  => Class['wp'],
+			-> wp::plugin { 'wordpress-importer':
+				location => $config[mapped_paths][base],
+				ensure   => installed,
+				require  => Class['wp'],
+			}
+
+			-> wp::command { "$location wp import ${ $wxr_path }":
+				location => $config[mapped_paths][base],
+				command => "import ${ $wxr_path } --authors=create",
+			}
 		}
+		else {
+				wp::plugin { 'wordpress-importer':
+				location => $config[mapped_paths][base],
+				ensure   => installed,
+				require  => Class['wp'],
+			}
 
-		-> wp::command { "$location wp import ${ $wxr_path }":
-			location => $config[mapped_paths][base],
-			command => "import ${ $wxr_path } --authors=create",
+			-> wp::command { "$location wp import ${ $wxr_path }":
+				location => $config[mapped_paths][base],
+				command => "import ${ $wxr_path } --authors=create",
+			}
 		}
 	}
 }
