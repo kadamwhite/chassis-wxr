@@ -57,6 +57,11 @@ class chassis-wxr (
         require  => Chassis::Wp[ $config['hosts'][0] ],
       }
 
+      -> wp::plugin { 'wordpress-importer':
+        ensure   => enabled,
+        location => $config[mapped_paths][base],
+      }
+
       -> wp::command { "$location wp import ${ $wxr_path }":
         location => $config[mapped_paths][base],
         command  => "import ${ $wxr_path } --authors=create",
