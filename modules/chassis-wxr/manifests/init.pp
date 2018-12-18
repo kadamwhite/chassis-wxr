@@ -31,38 +31,42 @@ class chassis-wxr (
     # }
 
     if $config[wxr][clean] == true {
-      wp::command { "$location wp site empty":
+      wp::command { 'wp site empty':
         location => $config[mapped_paths][base],
         command  => 'site empty --uploads --yes',
         # These tasks will not run unless WP is installed.
         require  => Chassis::Wp[ $config['hosts'][0] ],
       }
 
-      -> wp::plugin { 'wordpress-importer':
-        ensure   => installed,
+      -> wp::command { 'wp plugin install wordpress-importer':
         location => $config[mapped_paths][base],
-        require  => Class['wp'],
+        command  => 'plugin install wordpress-importer',
       }
 
-      -> wp::command { "$location wp import ${ $wxr_path }":
+      -> wp::command { 'wp plugin activate wordpress-importer':
+        location => $config[mapped_paths][base],
+        command  => 'plugin activate wordpress-importer',
+      }
+
+      -> wp::command { "wp import ${ $wxr_path }":
         location => $config[mapped_paths][base],
         command  => "import ${ $wxr_path } --authors=create",
       }
     }
     else {
-      wp::plugin { 'wordpress-importer':
-        ensure   => installed,
+      wp::command { 'wp plugin install wordpress-importer':
         location => $config[mapped_paths][base],
+        command  => 'plugin install wordpress-importer',
         # These tasks will not run unless WP is installed.
         require  => Chassis::Wp[ $config['hosts'][0] ],
       }
 
-      -> wp::plugin { 'wordpress-importer':
-        ensure   => enabled,
+      -> wp::command { 'wp plugin activate wordpress-importer':
         location => $config[mapped_paths][base],
+        command  => 'plugin activate wordpress-importer',
       }
 
-      -> wp::command { "$location wp import ${ $wxr_path }":
+      -> wp::command { "wp import ${ $wxr_path }":
         location => $config[mapped_paths][base],
         command  => "import ${ $wxr_path } --authors=create",
       }
